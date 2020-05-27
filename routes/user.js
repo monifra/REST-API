@@ -5,7 +5,7 @@ const bcryptjs = require('bcryptjs');
 const auth = require('basic-auth');
 const { check, validationResult } = require('express-validator');
 
-const User = require('../db/models/user');
+const User = require('../db').User;
 
 // Construct a router instance.
 const router = express.Router();
