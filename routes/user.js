@@ -67,10 +67,23 @@ const authenticateUser =  async (req, res, next) => {
     }
 };
 
+/* Handler function to wrap each route. */
+function asyncHandler(callbackF){
+    return async(req, res, next) => {
+        try {
+            await callbackF(req, res, next)
+        } catch(error){
+            res.status(500).send(error);
+        }
+    }
+}
+
 
 //USER ROUTES
+
+//WORKS!!!
 // GET api/users shows the current authenticate user, status 200
-router.get('/users', authenticateUser,(req,res)=>{
+router.get('/users', authenticateUser,asyncHandler(async(req,res)=>{
     const user = req.currentUser;
 
     res.json({
@@ -79,9 +92,11 @@ router.get('/users', authenticateUser,(req,res)=>{
         lastName: user.lastName,
         emailAddress: user.emailAddress
     });
-});
+}));
+
+//DOESN'T WORK!!!
 // POST api/users creates new user, sets the Location header to / and returns no content, status 201
-// Route that creates a new user.
+
 router.post('/users', [
     check('firstName')
         .exists({ checkNull: true, checkFalsy: true })
@@ -97,7 +112,9 @@ router.post('/users', [
     check('password')
         .exists({ checkNull: true, checkFalsy: true })
         .withMessage('Please provide a value for "password"'),
-], async (req, res) => {
+], asyncHandler (async(req, res) => {
+
+
         // Attempt to get the validation result from the Request object.
         const errors = validationResult(req);
 
@@ -123,5 +140,5 @@ router.post('/users', [
         // Set the status to 201 Created and end the response.
         return res.location(`/`).status(201).end();
 
-});
+}));
 module.exports = router;
