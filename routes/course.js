@@ -114,6 +114,7 @@ router.post('/courses' ,authenticateUser, asyncHandler(async(req,res,next)=>{
     res.location(`/courses/${id}`).status(201).end();
 }));
 
+//WORKS!!!
 // PUT api/courses/:id updates existing, chosen course, returns no content, status 204
 router.put('/courses/:id', authenticateUser, asyncHandler(async(req,res,next)=>{
     let course;
@@ -123,6 +124,15 @@ router.put('/courses/:id', authenticateUser, asyncHandler(async(req,res,next)=>{
         res.status(204).end())
         : res.status(404).json({message: 'Course Not Found'})
 }));
-// DELETE api/courses/:id deletes chosen course, returns no content, status 204
 
+//WORKS!!!
+// DELETE api/courses/:id deletes chosen course, returns no content, status 204
+router.delete('/courses/:id', authenticateUser, asyncHandler(async(req,res,next)=>{
+    let course;
+    course = await Course.findByPk(req.params.id);
+    course
+        ? (await course.destroy(),
+        res.status(204).end())
+        : res.status(404).json({message: 'Course Not Found'})
+}));
 module.exports = router;

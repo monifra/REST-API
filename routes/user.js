@@ -94,7 +94,7 @@ router.get('/users', authenticateUser,asyncHandler(async(req,res)=>{
     });
 }));
 
-//DOESN'T WORK!!!
+//WORKS!!!
 // POST api/users creates new user, sets the Location header to / and returns no content, status 201
 
 router.post('/users', [
