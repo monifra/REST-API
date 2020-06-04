@@ -61,7 +61,7 @@ const authenticateUser =  async (req, res, next) => {
         console.warn(message);
 
         // Return a response with a 401 Unauthorized HTTP status code.
-        res.status(401).json({ message: 'Access Denied' });
+        res.status(401).json({ message: 'Access Denied, Please Log in' });
     } else {
         // Or if user authentication succeeded...
         // Call the next() method.
@@ -103,36 +103,96 @@ router.get('/courses/:id', asyncHandler(async(req,res,next)=>{
 
 }));
 
+//WORKS!!!
 // POST api/courses creates a new course, sets the Location header to the URI for the course, returns no content, status 201
-router.post('/courses' ,authenticateUser, asyncHandler(async(req,res,next)=>{
-    let course;
+router.post('/courses',[
+    check('title')
+        .exists({ checkNull: true})
+        .withMessage('Please provide a value for "title"'),
+    check('description')
+        .exists({ checkNull: true, checkFalsy: true })
+        .withMessage('Please provide a value for "description"'),
 
-    course = await Course.create(req.body);
-    console.log(req.body);
-    console.log(course);
-    const id = course.id;
-    res.location(`/courses/${id}`).status(201).end();
+] ,authenticateUser, asyncHandler(async(req,res,next)=>{
+    // Attempt to get the validation result from the Request object.
+    const errors = validationResult(req);
+    try{
+        // If there are validation errors...
+        if (!errors.isEmpty()) {
+            // Use the Array `map()` method to get a list of error messages.
+            const errorMessages = errors.array().map(error => error.msg);
+
+            // Return the validation errors to the client.
+            return res.status(400).json({ errors: errorMessages });
+        }
+
+        let course;
+
+        course = await Course.create(req.body);
+        console.log(req.body);
+        console.log(course);
+        const id = course.id;
+        res.location(`/courses/${id}`).status(201).end();
+    } catch(error){
+        throw error; // error caught in the asyncHandler's catch block
+    }
+
 }));
 
 //WORKS!!!
 // PUT api/courses/:id updates existing, chosen course, returns no content, status 204
-router.put('/courses/:id', authenticateUser, asyncHandler(async(req,res,next)=>{
-    let course;
-    course = await Course.findByPk(req.params.id);
-    course
-        ? (await course.update(req.body),
-        res.status(204).end())
-        : res.status(404).json({message: 'Course Not Found'})
+router.put('/courses/:id',[
+    check('title')
+        .exists({ checkNull: true})
+        .withMessage('Please provide a value for "title"'),
+    check('description')
+        .exists({ checkNull: true, checkFalsy: true })
+        .withMessage('Please provide a value for "description"'),
+
+] , authenticateUser, asyncHandler(async(req,res,next)=>{
+    // Attempt to get the validation result from the Request object.
+    const errors = validationResult(req);
+    try{
+        // If there are validation errors...
+        if (!errors.isEmpty()) {
+            // Use the Array `map()` method to get a list of error messages.
+            const errorMessages = errors.array().map(error => error.msg);
+
+            // Return the validation errors to the client.
+            return res.status(400).json({ errors: errorMessages });
+        }
+
+        let course;
+        const user = req.currentUser;
+
+        course = await Course.findByPk(req.params.id);
+        if(course){
+            if(course.userId === user.id) {
+                await course.update(req.body);
+                res.status(204).end();
+            }else{
+                return res.status(403).json({message: 'Sorry! You cannot make changes in other users courses'});
+            }
+        }else{
+            res.status(404).json({message: 'Course Not Found'});
+        }
+    } catch(error){
+        throw error; // error caught in the asyncHandler's catch block
+    }
 }));
 
 //WORKS!!!
 // DELETE api/courses/:id deletes chosen course, returns no content, status 204
 router.delete('/courses/:id', authenticateUser, asyncHandler(async(req,res,next)=>{
-    let course;
-    course = await Course.findByPk(req.params.id);
-    course
-        ? (await course.destroy(),
-        res.status(204).end())
-        : res.status(404).json({message: 'Course Not Found'})
+    try{
+        let course;
+        course = await Course.findByPk(req.params.id);
+        course
+            ? (await course.destroy(),
+            res.status(204).end())
+            : res.status(404).json({message: 'Course Not Found'})
+    } catch(error){
+        throw error; // error caught in the asyncHandler's catch block
+    }
 }));
 module.exports = router;

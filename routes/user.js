@@ -59,7 +59,7 @@ const authenticateUser =  async (req, res, next) => {
         console.warn(message);
 
         // Return a response with a 401 Unauthorized HTTP status code.
-        res.status(401).json({ message: 'Access Denied' });
+        res.status(401).json({ message: 'Access Denied, Please Log in' });
     } else {
         // Or if user authentication succeeded...
         // Call the next() method.
@@ -91,7 +91,7 @@ router.get('/users', authenticateUser,asyncHandler(async(req,res)=>{
         firstName: user.firstName,
         lastName: user.lastName,
         emailAddress: user.emailAddress
-    });
+    }).status(200);
 }));
 
 //WORKS!!!
@@ -117,6 +117,7 @@ router.post('/users', [
 
         // Attempt to get the validation result from the Request object.
         const errors = validationResult(req);
+    try{
 
         // If there are validation errors...
         if (!errors.isEmpty()) {
@@ -139,6 +140,12 @@ router.post('/users', [
 
         // Set the status to 201 Created and end the response.
         return res.location(`/`).status(201).end();
-
+    } catch(error){
+        if(error.name === "SequelizeUniqueConstraintError"){
+            return res.status(422).json({message: 'Email address must be unique'});
+        }else{
+            throw error;
+        }
+    }
 }));
 module.exports = router;
