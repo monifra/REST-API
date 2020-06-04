@@ -84,7 +84,7 @@ function asyncHandler(callbackF){
 //WORKS!!!
 // GET api/users shows the current authenticate user, status 200
 router.get('/users', authenticateUser,asyncHandler(async(req,res)=>{
-    const user = req.currentUser;
+    const user = req.currentUser; //current user
 
     res.json({
         id: user.id,
@@ -105,7 +105,7 @@ router.post('/users', [
         .exists({ checkNull: true, checkFalsy: true })
         .withMessage('Please provide a value for "lastName"'),
     check('emailAddress')
-        .isEmail()
+        .isEmail() //checks for email format
         .withMessage('Please provide valid "emailAddress"')
         .exists({ checkNull: true, checkFalsy: true })
         .withMessage('Please provide a value for "emailAddress"'),
@@ -113,7 +113,6 @@ router.post('/users', [
         .exists({ checkNull: true, checkFalsy: true })
         .withMessage('Please provide a value for "password"'),
 ], asyncHandler (async(req, res) => {
-
 
         // Attempt to get the validation result from the Request object.
         const errors = validationResult(req);
@@ -134,18 +133,18 @@ router.post('/users', [
         // Hash the new user's password.
         user.password = bcryptjs.hashSync(user.password);
 
-
         // Add the user to the `users` array.
         await User.create(user);
 
         // Set the status to 201 Created and end the response.
         return res.location(`/`).status(201).end();
     } catch(error){
-        if(error.name === "SequelizeUniqueConstraintError"){
+        if(error.name === "SequelizeUniqueConstraintError"){ //checks if email is already in a database
             return res.status(422).json({message: 'Email address must be unique'});
         }else{
             throw error;
         }
     }
 }));
+
 module.exports = router;

@@ -85,21 +85,21 @@ function asyncHandler(callbackF){
 //WORKS!!!
 // GET api/courses shows all courses, status 200
 router.get('/courses',asyncHandler(async(req, res)=>{
-    const courses = await Course.findAll({
+    const courses = await Course.findAll({ //finds all courses
         attributes: ['id', 'title', 'description', 'estimatedTime'],
     });
-    res.status(200).json(courses);
+    res.status(200).json(courses); //sets 200 status and shows the list of courses
 }));
 
 //WORKS!!!
 // GET api/courses/:id shows one chosen course, status 200
 router.get('/courses/:id', asyncHandler(async(req,res,next)=>{
-    const course = await Course.findByPk(req.params.id);
+    const course = await Course.findByPk(req.params.id); //finds course by given id
     //console.log(req.params.id);
 
     course
-        ?res.status(200).json(course)
-        : res.status(404).json({message: 'Course Not found'})
+        ?res.status(200).json(course) //shows chosen course
+        : res.status(404).json({message: 'Course Not found'}) //shows error message when course doesn't exist
 
 }));
 
@@ -128,11 +128,11 @@ router.post('/courses',[
 
         let course;
 
-        course = await Course.create(req.body);
+        course = await Course.create(req.body); //creates new course
         console.log(req.body);
         console.log(course);
         const id = course.id;
-        res.location(`/courses/${id}`).status(201).end();
+        res.location(`/courses/${id}`).status(201).end(); //sets URI and gives 201 status
     } catch(error){
         throw error; // error caught in the asyncHandler's catch block
     }
@@ -165,16 +165,16 @@ router.put('/courses/:id',[
         let course;
         const user = req.currentUser;
 
-        course = await Course.findByPk(req.params.id);
+        course = await Course.findByPk(req.params.id); //finds course with given id
         if(course){
-            if(course.userId === user.id) {
-                await course.update(req.body);
+            if(course.userId === user.id){
+                await course.update(req.body); //updates course with given id
                 res.status(204).end();
             }else{
                 return res.status(403).json({message: 'Sorry! You cannot make changes in other users courses'});
             }
         }else{
-            res.status(404).json({message: 'Course Not Found'});
+            res.status(404).json({message: 'Course Not Found'}); //shows error when course doesn't exist
         }
     } catch(error){
         throw error; // error caught in the asyncHandler's catch block
@@ -186,11 +186,19 @@ router.put('/courses/:id',[
 router.delete('/courses/:id', authenticateUser, asyncHandler(async(req,res,next)=>{
     try{
         let course;
-        course = await Course.findByPk(req.params.id);
-        course
-            ? (await course.destroy(),
-            res.status(204).end())
-            : res.status(404).json({message: 'Course Not Found'})
+        const user = req.currentUser;
+
+        course = await Course.findByPk(req.params.id); //find a course with given id
+        if(course){
+            if(course.userId === user.id){
+                await course.destroy(); //deletes course
+                res.status(204).end();
+            }else{
+                return res.status(403).json({message: 'Sorry! You cannot make changes in other users courses'});
+            }
+        }else{
+            res.status(404).json({message: 'Course Not Found'}) //shows error when course doesn't exist
+        }
     } catch(error){
         throw error; // error caught in the asyncHandler's catch block
     }
