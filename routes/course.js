@@ -86,7 +86,11 @@ function asyncHandler(callbackF){
 // GET api/courses shows all courses, status 200
 router.get('/courses',asyncHandler(async(req, res)=>{
     const courses = await Course.findAll({ //finds all courses
-        attributes: ['id', 'title', 'description', 'estimatedTime'],
+        attributes: ['id', 'title', 'description', 'estimatedTime', 'materialsNeeded', 'userId'],
+        include: [{
+            attributes: ['id', 'firstName', 'lastName', 'emailAddress'],
+            model: User,
+        }],
     });
     res.status(200).json(courses); //sets 200 status and shows the list of courses
 }));
@@ -94,7 +98,13 @@ router.get('/courses',asyncHandler(async(req, res)=>{
 //WORKS!!!
 // GET api/courses/:id shows one chosen course, status 200
 router.get('/courses/:id', asyncHandler(async(req,res,next)=>{
-    const course = await Course.findByPk(req.params.id); //finds course by given id
+    const course = await Course.findByPk(req.params.id, {
+        attributes: ['id', 'title', 'description', 'estimatedTime', 'materialsNeeded', 'userId'],
+        include: [{
+            attributes: ['id', 'firstName', 'lastName', 'emailAddress'],
+            model: User,
+        }],
+    }); //finds course by given id
     //console.log(req.params.id);
 
     course
