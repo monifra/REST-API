@@ -1,4 +1,4 @@
-## REST API School Project
+## REST API School
 In this project I've created a REAST API using Express. It lets users administrate my imaginary school database of courses. It uses SQLite database, Node.js and Express to create API routes, Sequelize ORM for data modeling and validation. The database configuration was set with Sequelize CLI.    
 ### What it is doing
 * Application lets users administrate database of courses. The user can browse, edit or even delete existing courses and add new ones.
